@@ -1,0 +1,42 @@
+scimitar 关键地址表（相对 image base 0x100000000，ASLR 无关）
+二进制 sha256 见同目录 scimitar.sha256
+版本基线：Assassin's Creed Shadows macOS 1.0.35（Contents/MacOS/scimitar, 214,476,560 B, 2026-10-25）
+
+【类型注册与存档】
+0x10046df90   类型注册函数（全二进制 486 个 bl 调用点）
+0x1002d6984   存档魔数使用点 A
+0x1002fb3f8   存档魔数使用点 B
+0x1002fbe5c   存档魔数使用点 C
+记录 +0x1C    类型值（如 0x3400068c / 0x0100068c）
+
+【动作 / UI】
+0x1017de1d0   FindActionById(manager, id)
+0x1017de5c8   动作执行/可用性判定 (manager, flag, node, 1)
+0x101432600   名字+id 注册表插入（262 个调用者）
+0x101ab1348   设置页刷新分发器（曾误判为 BenchmarkStart 触发点）
+0x1029617e0   BenchmarkStart 动作对象构造器（vtable 0x10b8c51e8）
+0x106b33ec0   BenchmarkStart id getter（vtable +0x40）
+0x10a09daac   benchmark/benchmark.dat 加载（Mac 上未命中）
+
+【动作 ID】
+0x9FDD3F6D    BenchmarkStart
+0x50549140    BenchmarkShowPrevious
+0x384C27F3    OptionsApply
+0xC6F3598     OptionsResetToDefault
+0x22DA8086    OptionsResetSelectedOptionToDefault
+
+【资源 / Mount】
+0x106640e28   Mount 链（来自 iOS 侧 docs/plan.md，本轮未复核）
+
+【段布局】
+__TEXT         vmaddr 0x100000000  fileoff 0           size 0x0b4d4000
+__DATA_CONST   vmaddr 0x10b4d4000
+__DATA         vmaddr 0x10bee8000
+__LINKEDIT     vmaddr 0x10d934000
+
+【如何重新定位（换版本后）】
+./tools/findcall <scimitar> 0x10046df90        # 类型注册调用点
+./tools/findimm  <scimitar> aa33 57fb 99fa 1004 # 存档魔数 → 读写函数
+./tools/classhash.py <scimitar> 0x10046df90     # CRC32(类名) -> 类名 全表
+
+来源：acst/acst.md、acshadows-ios/agents.md、acshadows-ios/mac/inject/README.md
